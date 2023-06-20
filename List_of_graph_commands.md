@@ -50,9 +50,14 @@ https://graph.microsoft.com/v1.0/me/messages?($select=parentFolderId,id,createdD
 
 ### Get messages from specific period
 https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta?$orderby=receivedDateTime desc&$filter=receivedDateTime ge 2023-06-10T00:00Z
+
+Get messages from April, 2023
+https://graph.microsoft.com/v1.0/me/messages?$filter=ReceivedDateTime ge 2023-04-01 and receivedDateTime lt 2023-05-01
+
 ge - means greater or equal, full list is avasilible here: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
 
-
+### Quantity of sent messages
+https://graph.microsoft.com/v1.0/me/mailFolders/SentItems/messages?$count=true
 
 
 ## Examples
