@@ -41,7 +41,7 @@ https://graph.microsoft.com/v1.0/me/mailfolders/"AAMkADQ0NDQ3MjIxLTgzYjAtNDQ2Yy0
 <p><a href=""><del>https://graph.microsoft.com/v1.0/me/messages?($filter=ReceivedDateTime ge 2023-06-18 and ReceivedDateTime le 2023-06-19)&($count=true)</del></a></p>
 
 ### Get messages with the specific subject
-<a href="#">https://graph.microsoft.com/v1.0/me/messages?$filter=subject eq 'Fwd: 1039202 // Index_company details'</a>
+[https://graph.microsoft.com/v1.0/me/messages?$filter=subject eq 'Fwd: 1039202 // Index_company details'](https://graph.microsoft.com/v1.0/me/messages?$filter=subject eq 'Fwd: 1039202 // Index_company details')
 
 ### Use multiple queries in one request
 Use brackets to combine multiple queries in one request<br>
