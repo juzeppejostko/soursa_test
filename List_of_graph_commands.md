@@ -49,13 +49,13 @@ Use brackets to combine multiple queries in one request<br>
 
 
 ### Get messages from specific period
-https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta?$orderby=receivedDateTime desc&$filter=receivedDateTime ge 2023-06-10T00:00Z
+<p><a href="#">https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta?$orderby=receivedDateTime desc&$filter=receivedDateTime ge 2023-06-10T00:00Z</a></p>
 
 Get messages before 7th of May 2023
-graph.microsoft.com/me/messages?$filter=receivedDateTime lt 2023-05-07T16:55:39Z&$orderby=receivedDateTime desc
+<p><a href="#">graph.microsoft.com/me/messages?$filter=receivedDateTime lt 2023-05-07T16:55:39Z&$orderby=receivedDateTime desc</a></p>
 
 <b>Get all messages with the recivedeDateTime May 2023</b><br>
-https://graph.microsoft.com/v1.0/me/messages/?$orderby=receivedDateTime desc &$filter=receivedDateTime ge 2023-05-01T00:00:00Z &$filter=receivedDateTime lt 2023-06-01T00:00:00Z &$select=receivedDateTime,webLink,sender,from,toRecipients,ccRecipients
+<p><a href="#">https://graph.microsoft.com/v1.0/me/messages/?$orderby=receivedDateTime desc &$filter=receivedDateTime ge 2023-05-01T00:00:00Z &$filter=receivedDateTime lt 2023-06-01T00:00:00Z &$select=receivedDateTime,webLink,sender,from,toRecipients,ccRecipients</a></p>
 
 ge - means greater or equal, full list is avasilible here: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
 
