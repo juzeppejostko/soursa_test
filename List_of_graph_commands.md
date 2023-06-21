@@ -54,7 +54,7 @@ https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta?$orderby=re
 Get messages before 7th of May 2023
 graph.microsoft.com/me/messages?$filter=receivedDateTime lt 2023-05-07T16:55:39Z&$orderby=receivedDateTime desc
 
-Get all messages with the recivedeDateTime May 2023
+<b>Get all messages with the recivedeDateTime May 2023</b><br>
 https://graph.microsoft.com/v1.0/me/messages/?$orderby=receivedDateTime desc &$filter=receivedDateTime ge 2023-05-01T00:00:00Z &$filter=receivedDateTime lt 2023-06-01T00:00:00Z &$select=receivedDateTime,webLink,sender,from,toRecipients,ccRecipients
 
 ge - means greater or equal, full list is avasilible here: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
