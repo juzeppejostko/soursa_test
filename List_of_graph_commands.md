@@ -38,7 +38,7 @@ https://graph.microsoft.com/v1.0/me/mailfolders/"AAMkADQ0NDQ3MjIxLTgzYjAtNDQ2Yy0
 
 !!!IMPORTANT
 '$count=true' doesn't work in queries i.e. next request would not count qty of elements:
-<p><del>https://graph.microsoft.com/v1.0/me/messages?($filter=ReceivedDateTime ge 2023-06-18 and ReceivedDateTime le 2023-06-19)&($count=true)</del></p>
+<p><a href=""><del>https://graph.microsoft.com/v1.0/me/messages?($filter=ReceivedDateTime ge 2023-06-18 and ReceivedDateTime le 2023-06-19)&($count=true)</del></a></p>
 
 ### Get messages with the specific subject
 https://graph.microsoft.com/v1.0/me/messages?$filter=subject eq 'Fwd: 1039996 // Grotex_company details for BAFA'
