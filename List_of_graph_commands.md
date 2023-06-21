@@ -16,7 +16,7 @@ or same but skipping first 10 items
 
 https://graph.microsoft.com/v1.0/me/mailfolders/"AAMkADQ0NDQ3MjIxLTgzYjAtNDQ2Yy04ODJlLTEyODVhMjdlMDkxNQAuAAAAAAAeB4YSD81iRYQYxh-eLO7mAQBCSp8yCjLkTKJp2P4zTumQAAAB374FAAA="/messages?$skip=10
 
-### List messages in folder, but show only specified parameters
+### List messages in folder, but show only specified parameters ('select' parameter)
 https://graph.microsoft.com/v1.0/me/messages?$select=parentFolderId,id,createdDateTime,sentDateTime,sender,from,toRecipients,ccRecipients,subject,body
 
 ### List childFolders of folder:
@@ -38,7 +38,7 @@ https://graph.microsoft.com/v1.0/me/mailfolders/"AAMkADQ0NDQ3MjIxLTgzYjAtNDQ2Yy0
 
 !!!IMPORTANT
 '$count=true' doesn't work in queries i.e. next request would not count qty of elements:
-https://graph.microsoft.com/v1.0/me/messages?($filter=ReceivedDateTime ge 2023-06-18 and ReceivedDateTime le 2023-06-19)&($count=true)
+<p><del>https://graph.microsoft.com/v1.0/me/messages?($filter=ReceivedDateTime ge 2023-06-18 and ReceivedDateTime le 2023-06-19)&($count=true)</del></p>
 
 ### Get messages with the specific subject
 https://graph.microsoft.com/v1.0/me/messages?$filter=subject eq 'Fwd: 1039996 // Grotex_company details for BAFA'
