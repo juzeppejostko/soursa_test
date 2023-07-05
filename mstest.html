@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MS Graph API Email Analysis</title>
+  <script src="https://alcdn.msauth.net/browser/2.14.2/js/msal-browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>MS Graph API Email Analysis</h1>
+
+  <div id="dateFields" style="display: none;">
+    <form id="dateForm" onsubmit="handleFormSubmit(event)">
+      <!-- Поля выбора дат -->
+      <div>
+        <label for="startDate">Дата начала:</label>
+        <input type="text" id="startDate" name="startDate" required readonly >
+      </div>
+      <div>
+        <label for="endDate">Дата окончания:</label>
+        <input type="text" id="endDate" name="endDate" required readonly >
+      </div>
+  
+      <!-- Кнопка отправки формы -->
+      <button type="submit">Получить сообщения</button>
+    </form>
+  </div>
+  <div id="error-message" class="error-message" style="display: none;"></div>
+  <div id="loader" style="display: none;"></div>
+
+  <h2 class="analytics_title" id="countSentMails" style="display: none;">Количество отправленных сообщений</h2>
+
+  <canvas id="messageChart" style="display: none;"></canvas>
+
+  <h2 class="analytics_title" id="countReceivedMails" style="display: none;">Количество полученных сообщений</h2>
+
+  <canvas id="receivedChart" style="display: none;"></canvas>
+ 
+  <h2 class="analytics_title" id="countSentDayMails" style="display: none;">Количество отправленных сообщений по дням и часам</h2>
+
+  <div class="table-container" id="sentTable" style="display: none;">
+    <table class="chart-table" id="chart-table-sent">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Вс</th>
+          <th>Пн</th>
+          <th>Вт</th>
+          <th>Ср</th>
+          <th>Чт</th>
+          <th>Пт</th>
+          <th>Сб</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Здесь будут созданы строки с часами -->
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="analytics_title" id="countReceivedDayMails" style="display: none;">Количество полученных сообщений по дням и часам</h2>
+
+  <div class="table-container" id="receivedTable" style="display: none;">
+    <table class="chart-table" id="chart-table-received">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Вс</th>
+          <th>Пн</th>
+          <th>Вт</th>
+          <th>Ср</th>
+          <th>Чт</th>
+          <th>Пт</th>
+          <th>Сб</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Здесь будут созданы строки с часами -->
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="analytics_title" id="users-receivers-title" style="display: none;">Топ 10 получателей</h2>
+
+  <div class="table-users-container" id="users-receivers-table" style="display: none;">
+    <table id="top-receivers-table">
+      <thead>
+        <tr>
+          <th>Получатель</th>
+          <th>Отправлено</th>
+          <th>Получено</th>
+          <th>Средняя скорость ответа</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Здесь будут добавляться строки с данными -->
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="analytics_title" id="users-senders-title" style="display: none;">Топ 10 отправителей</h2>
+
+  <div class="table-users-container" id="users-senders-table" style="display: none;">
+    <table id="top-senders-table">
+      <thead>
+        <tr>
+          <th>Отправитель</th>
+          <th>Отправлено</th>
+          <th>Получено</th>
+          <th>Средняя скорость ответа</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Здесь будут добавляться строки с данными -->
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="analytics_title" id="domains-title" style="display: none;">Топ 10 доменов</h2>
+
+  <div class="table-users-container" id="domains-table" style="display: none;">
+    <table id="top-domains-table">
+      <thead>
+        <tr>
+          <th>Домен</th>
+          <th>Количество отправленных сообщений</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Здесь будут добавляться строки с данными -->
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="analytics_title" id="stats-title" style="display: none;">Общая статистика</h2>
+
+  <div class="table-users-container" id="stats-table" style="display: none;">
+    <table id="overall-stats-table">
+      <thead>
+        <tr>
+          <th>Скорость ответа на отправленное сообщение</th>
+          <th>Скорость ответа на полученное сообщение</th>
+          <th>Неотвеченные отправленные</th>
+          <th>Неотвеченные полученные</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Здесь будут добавляться строки с данными -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- HTML элемент для отображения результатов -->
+  <div id="results"></div>
+
+  <script>
+    // Конфигурация приложения и MSAL
+    let receivedChart, sentChart
+    const msalConfig = {
+      auth: {
+        clientId: '32de8d27-45ea-4b27-b273-df82965b87cc',
+        authority: 'https://login.microsoftonline.com/f7efe77a-3a19-482b-94d9-7e60b74ac8fc',
+        redirectUri: 'http://localhost:5500' // Укажите URL перенаправления для вашего приложения
+      }
+    };
+
+    const graphConfig = {
+      graphEndpoint: 'https://graph.microsoft.com/v1.0',
+      scopes: ['user.read', 'mail.read'] // Разрешения, необходимые для чтения пользовательских данных и электронной почты
+    };
+
+    // Инициализация клиента MSAL
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    // Обработчик нажатия кнопки входа
+    function login() {
+      const loader = document.getElementById('loader');
+      loader.style.display = 'block';
+      loginButton.style.display = 'none';
+      var errorMessage = document.getElementById("error-message");
+
+      msalInstance.loginPopup({ scopes: graphConfig.scopes })
+        .then(response => {
+          // Вход выполнен успешно, получаем токен доступа
+          accessToken = response.accessToken;
+          const dateFieldsContainer = document.getElementById('dateFields');
+
+          // Изменение стиля контейнера для отображения формы
+          dateFieldsContainer.style.display = 'block';
+
+          const loginButton = document.getElementById('loginButton');
+          loginButton.style.display = 'none';
+          loader.style.display = 'none';
+          errorMessage.style.display = "none";
+          
+          })
+        .catch(error => {
+        console.error('Ошибка при входе:', error);
+        
+        errorMessage.style.display = "block";
+        errorMessage.textContent = "Возникла ошибка при входе, попробуйте еще раз";
+        loginButton.style.display = 'block';
+        });
+
+          
+
+          // Вызов MS Graph API для получения писем
+         
+    }
+
+    function handleFormSubmit(event)
+    {
+      event.preventDefault(); 
+      
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      var errorMessage = document.getElementById("error-message");
+      if (!startDate || !endDate) {
+        errorMessage.style.display = "block";
+        errorMessage.textContent = "Заполните все обязательные поля!";
+        return false;
+      } else {
+        errorMessage.style.display = "none";
+      }
+
+      var date1 = new Date(startDate);
+      var date2 = new Date(endDate);
+
+      if (date2 < date1){
+        errorMessage.style.display = "block";
+        errorMessage.textContent = "Дата окончания должна быть больше даты начала";
+        return false;
+      } else {
+        errorMessage.style.display = "none";
+      }
+      
+
+      const loader = document.getElementById('loader');
+      loader.style.display = 'block';
+      fetch('/metrics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ startDate: startDate, endDate: endDate, token: accessToken})
+      })
+      .then(response => response.json())
+      .then(data => {
+        loader.style.display = 'none';
+        var diagram = document.getElementById('messageChart')
+        var sentMailsTitle = document.getElementById('countSentMails')
+        var diagram1 = document.getElementById('receivedChart')
+        var receivedMailsTitle = document.getElementById('countReceivedMails')
+        if (diagram.style.display !== 'block')
+        {
+          sentChart = getSentDiagram(data.sentMails, 'messageChart');
+          receivedChart = getSentDiagram(data.receivedMails, 'receivedChart');
+        }
+        else
+        {
+          newData = getData(data.sentMails)
+          updateChart(sentChart, newData)
+          newData = getData(data.receivedMails)
+          updateChart(receivedChart, newData)
+        }
+
+        var sentTable = document.getElementById('sentTable')
+        if (sentTable.style.display !== 'block')
+        {
+          createTable(data.mailDayAnalytics, 'chart-table-sent')
+          createTable(data.receivedDayAnalytics, 'chart-table-received')
+          populateTable(data.topRecipients, "top-receivers-table")
+          populateTable(data.topSenders, "top-senders-table")
+          populateTopDomainsTable(data.topDomains)
+          populateOverallStatsTable(data)
+        }
+        else
+        {
+          populateTable(data.topRecipients, "top-receivers-table")
+          populateTable(data.topSenders, "top-senders-table")
+          populateTopDomainsTable(data.topDomains)
+          updateTable(data.mailDayAnalytics, 'chart-table-sent')
+          updateTable(data.receivedDayAnalytics, 'chart-table-received')
+          populateOverallStatsTable(data)
+        }
+        
+    
+        var sentTableTitle = document.getElementById('countSentDayMails')
+        sentTable.style.display = 'block'
+        sentTableTitle.style.display = 'block'
+
+        
+        var receivedTable = document.getElementById('receivedTable')
+        var receivedTableTitle = document.getElementById('countReceivedDayMails')
+        receivedTable.style.display = 'block'
+        receivedTableTitle.style.display = 'block'
+
+        sentMailsTitle.style.display = 'block'
+        receivedMailsTitle.style.display = 'block'
+
+        document.getElementById('users-receivers-table').style.display = 'block'
+        document.getElementById('users-receivers-title').style.display = 'block'
+        document.getElementById('users-senders-table').style.display = 'block'
+        document.getElementById('users-senders-title').style.display = 'block'
+        document.getElementById('domains-table').style.display = 'block'
+        document.getElementById('domains-title').style.display = 'block'
+        document.getElementById('stats-table').style.display = 'block'
+        document.getElementById('stats-title').style.display = 'block'
+      })
+      .catch(error => {
+        loader.style.display = 'none';
+        console.error('Ошибка при выполнении запроса:', error);
+      });
+    }
+
+    // Отображение результатов
+    function displayResults(emails) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      if (emails.length === 0) {
+        resultsDiv.innerHTML = 'Нет доступных писем.';
+        return;
+      }
+
+      emails.forEach(email => {
+        const emailDiv = document.createElement('div');
+        emailDiv.innerHTML = `
+          <h3>${email.subject}</h3>
+          <p>Отправитель: ${email.sender.emailAddress.name}</p>
+          <p>Почтовый адрес: ${email.sender.emailAddress.address}</p>
+          <p>Дата: ${email.receivedDateTime}</p>
+          <p>${email.bodyPreview}</p>
+          <hr>
+        `;
+        resultsDiv.appendChild(emailDiv);
+      });
+    }
+    flatpickr('#startDate', { dateFormat: 'Y-m-d' });
+    flatpickr('#endDate', { dateFormat: 'Y-m-d' });
+
+    function getData(mailsInfo) {
+      
+      const newData = {
+        labels: mailsInfo.dates,
+        datasets: [
+          {
+            label: 'Количество сообщений',
+            data: mailsInfo.messages,
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }
+        ]
+      };
+
+      return newData;
+    }
+
+    function updateChart(chart, newData) {
+      chart.data = newData;
+      chart.update();
+    }
+
+    function getSentDiagram(mailsInfo, type)
+    {
+      const data = {
+        labels: mailsInfo.dates, // Даты
+        datasets: [
+          {
+            label: 'Количество сообщений',
+            data: mailsInfo.messages, // Количество сообщений для каждой даты
+            backgroundColor: 'rgba(75, 192, 192, 0.6)', // Цвет заливки столбцов
+            borderColor: 'rgba(75, 192, 192, 1)', // Цвет границ столбцов
+            borderWidth: 1 // Толщина границ столбцов
+          }
+        ]
+      };
+      var diagram = document.getElementById(type)
+      
+
+      // Опции для диаграммы
+      const options = {
+        scales: {
+          y: {
+            beginAtZero: true // Начинать ось Y с нуля
+          }
+        }
+      };
+
+      // Создание диаграммы
+      
+      const ctx = document.getElementById(type).getContext('2d');
+      diagram.style.display = 'block';
+      const messageChart = new Chart(ctx, {
+        type: 'line', 
+        data: data,
+        options: options
+      });
+      return messageChart
+    }
+ 
+
+function createTable(messageData, type) {
+  const table = document.getElementById(type);
+  const tbody = table.getElementsByTagName('tbody')[0];
+
+  // Создание строк с часами и квадратиками
+  for (let hour = 0; hour < 24; hour++) {
+    const row = document.createElement('tr');
+    const hourCell = document.createElement('td');
+    hourCell.textContent = hour.toString().padStart(2, '0') + ':00';
+    row.appendChild(hourCell);
+
+    // Создание ячеек с квадратиками для каждого дня недели
+    for (let day = 0; day < 7; day++) {
+      const countCell = document.createElement('td');
+      const dataPoint = messageData.find(data => data.dayOfWeek === getDayOfWeek(day) && data.hour === hour && data.count>0);
+
+      if (dataPoint) {
+        const countSquare = document.createElement('div');
+        countSquare.className = 'count-square';
+        countSquare.style.backgroundColor = getColorByCount(dataPoint.count);
+        countCell.appendChild(countSquare);
+
+        const countTooltip = document.createElement('div');
+        countTooltip.className = 'count-tooltip';
+        countTooltip.textContent = dataPoint.count.toString();
+        countCell.appendChild(countTooltip);
+      }
+
+      row.appendChild(countCell);
+    }
+
+    tbody.appendChild(row);
+  }
+}
+
+function updateTable(messageData, type) {
+  const table = document.getElementById(type);
+  const tbody = table.getElementsByTagName('tbody')[0];
+
+  // Очистка существующих строк таблицы
+  tbody.innerHTML = '';
+
+  // Создание строк с часами и квадратиками для новых данных
+  for (let hour = 0; hour < 24; hour++) {
+    const row = document.createElement('tr');
+    const hourCell = document.createElement('td');
+    hourCell.textContent = hour.toString().padStart(2, '0') + ':00';
+    row.appendChild(hourCell);
+
+    // Создание ячеек с квадратиками для каждого дня недели
+    for (let day = 0; day < 7; day++) {
+      const countCell = document.createElement('td');
+      const dataPoint = messageData.find(data => data.dayOfWeek === getDayOfWeek(day) && data.hour === hour && data.count>0);
+
+      if (dataPoint) {
+        const countSquare = document.createElement('div');
+        countSquare.className = 'count-square';
+        countSquare.style.backgroundColor = getColorByCount(dataPoint.count);
+        countCell.appendChild(countSquare);
+
+        const countTooltip = document.createElement('div');
+        countTooltip.className = 'count-tooltip';
+        countTooltip.textContent = dataPoint.count.toString();
+        countCell.appendChild(countTooltip);
+      }
+
+      row.appendChild(countCell);
+    }
+
+    tbody.appendChild(row);
+  }
+}
+
+// Функция для получения дня недели по индексу (0 - Вс, 1 - Пн, и т.д.)
+function getDayOfWeek(dayIndex) {
+  const daysOfWeek = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  return daysOfWeek[dayIndex];
+}
+
+function getColorByCount(count) {
+  const maxCount = 20; // Максимальное количество сообщений
+  const saturation = Math.floor((count / maxCount) * 100); // Насыщенность: от 0% (меньше сообщений) до 100% (больше сообщений)
+  return `hsl(120, ${saturation}%, 50%)`;
+}
+
+function convertSecondsToDHMS(seconds) {
+  if (seconds == 0)
+  {
+    return 'Ответов не было'
+  }
+  const days = Math.floor(seconds / (3600 * 24));
+  const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  let result = '';
+  if (days > 0) {
+    result += `${days}д, `;
+  }
+  if (hours > 0) {
+    result += `${hours}ч, `;
+  }
+  if (minutes > 0) {
+    result += `${minutes}м, `;
+  }
+  if (remainingSeconds > 0) {
+    result += `${remainingSeconds}с`;
+  }
+
+  return result;
+}
+
+function populateTable(data, type) {
+      const tableBody = document.querySelector(`#${type} tbody`);
+      tableBody.innerHTML = '';
+
+      // Преобразование данных в массив
+      const dataArray = Object.entries(data);
+
+      // Сортировка по количеству отправленных сообщений
+      
+
+      dataArray.forEach((item) => {
+        const receiver = item[0];
+        const sent = item[1].sent;
+        const received = item[1].received;
+        const average = item[1].average;
+
+        const row = document.createElement('tr');
+        const receiverCell = document.createElement('td');
+        const sentCell = document.createElement('td');
+        const receivedCell = document.createElement('td');
+        const avgResponseTimeCell = document.createElement('td');
+
+        receiverCell.textContent = receiver;
+        sentCell.textContent = sent;
+        receivedCell.textContent = received;
+        avgResponseTimeCell.textContent = convertSecondsToDHMS(average);
+
+        row.appendChild(receiverCell);
+        row.appendChild(sentCell);
+        row.appendChild(receivedCell);
+        row.appendChild(avgResponseTimeCell);
+
+        tableBody.appendChild(row);
+      });
+    }
+    function populateTopDomainsTable(data) {
+  const tableBody = document.querySelector('#top-domains-table tbody');
+  tableBody.innerHTML = '';
+
+  // Преобразование данных в массив
+  const dataArray = Object.entries(data);
+
+  // Сортировка по количеству сообщений
+  const sortedData = dataArray.sort((a, b) => b[1] - a[1]);
+
+  // Ограничение только на 10 строк
+  const limitedData = sortedData.slice(0, 10);
+
+  limitedData.forEach((item) => {
+    const domain = item[0];
+    const count = item[1];
+
+    const row = document.createElement('tr');
+    const domainCell = document.createElement('td');
+    const countCell = document.createElement('td');
+
+    domainCell.textContent = domain;
+    countCell.textContent = count;
+
+    row.appendChild(domainCell);
+    row.appendChild(countCell);
+
+    tableBody.appendChild(row);
+  });
+}
+
+function formatResponseTime(time) {
+
+  const { days, hours, minutes, seconds } = time;
+  let formattedTime = '';
+  if (days > 0) {
+    formattedTime += `${days}д, `;
+  }
+  if (hours > 0) {
+    formattedTime += `${hours}ч, `;
+  }
+  if (minutes > 0) {
+    formattedTime += `${minutes}м, `;
+  }
+  formattedTime += `${seconds}с`;
+
+  if (formattedTime == '')
+  {
+    formattedTime = 'Ответов не было'
+  }
+  return formattedTime;
+}
+
+function populateOverallStatsTable(data) {
+  const tableBody = document.querySelector('#overall-stats-table tbody');
+  tableBody.innerHTML = '';
+
+  const row = document.createElement('tr');
+
+  // Скорость ответа на отправленные сообщения
+  const sentResponseTimeCell = document.createElement('td');
+  const formattedSentResponseTime = formatResponseTime(data.averageReplyToSent);
+  sentResponseTimeCell.textContent = formattedSentResponseTime;
+
+  // Скорость ответа на полученные сообщения
+  const receivedResponseTimeCell = document.createElement('td');
+  const formattedReceivedResponseTime = formatResponseTime(data.averageReplyToReceived);
+  receivedResponseTimeCell.textContent = formattedReceivedResponseTime;
+
+  // Неотвеченные отправленные
+  const unansweredSentCell = document.createElement('td');
+  unansweredSentCell.textContent = data.sentSum;
+
+  // Неотвеченные полученные
+  const unansweredReceivedCell = document.createElement('td');
+  unansweredReceivedCell.textContent = data.receivedSum;
+
+  row.appendChild(sentResponseTimeCell);
+  row.appendChild(receivedResponseTimeCell);
+  row.appendChild(unansweredSentCell);
+  row.appendChild(unansweredReceivedCell);
+
+  tableBody.appendChild(row);
+}
+
+
+  </script>
+
+  <!-- Кнопка входа -->
+  <button id='loginButton' onclick="login()">Войти</button>
+</body>
+</html>

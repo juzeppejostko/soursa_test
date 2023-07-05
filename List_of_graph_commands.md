@@ -59,6 +59,8 @@ Get messages before 7th of May 2023
 
 ge - means greater or equal, full list is avasilible here: https://learn.microsoft.com/en-us/graph/filter-query-parameter?tabs=http
 
+<p>'$count=true'here does not work</p>
+
 ### Quantity of sent messages
 https://graph.microsoft.com/v1.0/me/mailFolders/SentItems/messages?$count=true
 

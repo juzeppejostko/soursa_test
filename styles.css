@@ -1,0 +1,241 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 40px;
+}
+
+h1 {
+  text-align: center;
+}
+
+
+form {
+  margin: 40px 0;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+input[type="text"] {
+  width: 300px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+#loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+  margin: 40px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.analytics_title{
+  text-align: center;
+}
+
+#results {
+  margin-top: 40px;
+}
+
+/* #messageChart {
+  margin-top: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+} */
+
+#loginButton {
+  display: block;
+  margin: 40px auto;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#loginButton:hover {
+  background-color: #45a049;
+}
+
+.table-container {
+  width: 600px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.chart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.chart-table th,
+.chart-table td {
+  border: none;
+  padding: 10px;
+  position: relative;
+}
+
+.count-square {
+  width: 24px;
+  height: 24px;
+  border-radius: 20%;
+  transition: background-color 0.3s ease;
+}
+
+.count-tooltip {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  width: 100%;
+  padding: 4px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  visibility: hidden;
+  border-radius: 4px;
+  transition: visibility 0.3s ease;
+}
+
+
+.chart-table td:hover .count-tooltip {
+  visibility: visible;
+}
+
+
+.table-users-container {
+  display: block;
+  margin: 20px;
+}
+
+#top-receivers-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#top-receivers-table th,
+#top-receivers-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+#top-receivers-table th {
+  background-color: #f2f2f2;
+}
+
+#top-receivers-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#top-receivers-table tbody tr:hover {
+  background-color: #ddd;
+}
+
+#top-senders-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#top-senders-table th,
+#top-senders-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+#top-senders-table th {
+  background-color: #f2f2f2;
+}
+
+#top-senders-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#top-senders-table tbody tr:hover {
+  background-color: #ddd;
+}
+
+#top-domains-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#top-domains-table th,
+#top-domains-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+#top-domains-table th {
+  background-color: #f2f2f2;
+}
+
+#top-domains-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#top-domains-table tbody tr:hover {
+  background-color: #ddd;
+}
+
+#overall-stats-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#overall-stats-table th,
+#overall-stats-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+#overall-stats-table th {
+  background-color: #f2f2f2;
+}
+
+#overall-stats-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#overall-stats-table tbody tr:hover {
+  background-color: #ddd;
+}
+
