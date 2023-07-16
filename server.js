@@ -1,6 +1,6 @@
 const e = require('express');
 const express = require('express');
-const { link } = require('fs');
+const { link, writeFile} = require('fs');
 const app = express();
 const port = 5500;
 const path = require('path');
@@ -496,6 +496,20 @@ function getTopDomain(top)
     return topDomains
 }
 
+function saveDataToJson(data) {
+    const json = JSON.stringify(data);
+    console.log(json);
+
+    writeFile("output.json", json, 'utf8', err => {
+        if (err) {
+            console.log("An error occured while writing JSON Object to File.");
+            return console.log(err);
+        }
+
+        console.log("JSON file has been saved.");
+    });
+}
+
 app.use(express.json());
 app.use(express.static(__dirname));
 app.get('/', (req, res) => {
@@ -533,6 +547,7 @@ app.post('/metrics', (req, res) =>{
         
         
 
+        saveDataToJson(responseJson);
         res.status(200).json(responseJson)
     })
 
