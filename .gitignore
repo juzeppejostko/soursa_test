@@ -1,3 +1,6 @@
 text.txt
 .DS_Store
 mslearn-retrieve-m365-data-with-msgraph-quickstart
+/node_modules/
+.idea
+output.json
