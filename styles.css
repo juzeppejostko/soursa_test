@@ -115,13 +115,15 @@ button[type="submit"]:hover {
   height: 24px;
   border-radius: 20%;
   transition: background-color 0.3s ease;
+  margin: auto;
 }
 
 .count-tooltip {
   position: absolute;
-  top: -30px;
-  left: 0;
-  width: 100%;
+  margin: auto;
+  top: -11px;
+  right: 25%;
+  width: 40%;
   padding: 4px;
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
