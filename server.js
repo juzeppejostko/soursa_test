@@ -529,6 +529,8 @@ app.post('/metrics', (req, res) =>{
     const endDate = req.body['endDate']
     var responseJson = {}
     getAllInfo(accessToken, startDate, endDate).then(result => {
+        saveDataToJson(result);
+
         responseJson.sentMails = getSentMails(result['sentMails'])
         responseJson.receivedMails = getReceivedMails(result['receivedMails'])
         responseJson.averageReplyToSent = getReplyToSent(result['sentMails'], result['receivedMails'], 'sentDateTime', 'receivedDateTime')
@@ -547,7 +549,6 @@ app.post('/metrics', (req, res) =>{
         
         
 
-        saveDataToJson(responseJson);
         res.status(200).json(responseJson)
     })
 
