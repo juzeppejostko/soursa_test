@@ -356,7 +356,7 @@ function getReplyToSentByTop(sentMails, receivedMails, type1, type2, top)
             var receivedTime = 0
             var unixReceivedTime = 0
             
-            if (sentMails[i]['toRecipients'][0]['emailAddress']['address'] !== key)
+            if (sentMails[i]['toRecipients'][0] && sentMails[i]['toRecipients'][0]['emailAddress']['address'] !== key)
             {
                 continue
             }
