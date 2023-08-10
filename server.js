@@ -1,6 +1,7 @@
 const e = require('express');
 const express = require('express');
-const { link, writeFile} = require('fs');
+const { link, createWriteStream } = require('fs');
+const JSONStream = require( "JSONStream" );
 const app = express();
 const port = 5500;
 const path = require('path');
@@ -20,44 +21,33 @@ function formatDate(dateString) {
   }
 
 async function getAllInfo(accessToken, startDate, endDate)
-{   
+{
+    let link = `${graphConfig.graphEndpoint}/me/messages?$top=100&filter=receivedDateTime ge ${startDate} and receivedDateTime le ${endDate}`
+    let MailsInfo = []
 
-    const firstLinks = {"sentMails": `${graphConfig.graphEndpoint}/me/mailFolders/SentItems/messages?$top=100&filter=receivedDateTime ge ${startDate} and receivedDateTime le ${endDate}`,
-                        "receivedMails": `${graphConfig.graphEndpoint}/me/mailFolders/inbox/messages?$top=100&filter=receivedDateTime ge ${startDate} and receivedDateTime le ${endDate}`
-                       }
-    
-    let link
-    let MailsInfo = {}
-    for (let key in firstLinks) 
-    {   
-        link = firstLinks[key]
-        MailsInfo[key] = []
-        while (link !== '') {
-            try {
-              const response = await fetch(link, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`
-                }
-              });
-              
-              const data = await response.json();
-              if ('@odata.nextLink' in data) {
-                link = data['@odata.nextLink'];
-              } else {
-                link = '';
-              }
-              for (let i=0; i<data.value.length; i++)
-              {
-                MailsInfo[key].push(data.value[i])
-              }
-            } catch (error) {
-              console.error('Ошибка при вызове MS Graph API:', error);
-              link = ''
-              
+    while (link !== '') {
+        try {
+          const response = await fetch(link, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
             }
+          });
+
+          const data = await response.json();
+          if ('@odata.nextLink' in data) {
+            link = data['@odata.nextLink'];
+          } else {
+            link = '';
+          }
+          for (let i=0; i<data.value.length; i++)
+          {
+            MailsInfo.push(data.value[i])
+          }
+        } catch (error) {
+          console.error('Ошибка при вызове MS Graph API:', error);
+          link = ''
         }
     }
-    
     
     return MailsInfo
 
@@ -356,7 +346,7 @@ function getReplyToSentByTop(sentMails, receivedMails, type1, type2, top)
             var receivedTime = 0
             var unixReceivedTime = 0
             
-            if (sentMails[i]['toRecipients'][0]['emailAddress']['address'] !== key)
+            if (sentMails[i]['toRecipients'][0] && sentMails[i]['toRecipients'][0]['emailAddress']['address'] !== key)
             {
                 continue
             }
@@ -497,17 +487,18 @@ function getTopDomain(top)
 }
 
 function saveDataToJson(data) {
-    const json = JSON.stringify(data);
-    console.log(json);
+    const transformStream = JSONStream.stringify();
+    const outputStream = createWriteStream( __dirname + '/output.json' );
+    transformStream.pipe( outputStream );
+    data.forEach( transformStream.write );
+    transformStream.end();
 
-    writeFile("output.json", json, 'utf8', err => {
-        if (err) {
-            console.log("An error occured while writing JSON Object to File.");
-            return console.log(err);
+    outputStream.on(
+        'finish',
+        function handleFinish() {
+            console.log('JSON file has been saved.');
         }
-
-        console.log("JSON file has been saved.");
-    });
+    );
 }
 
 app.use(express.json());
@@ -531,21 +522,21 @@ app.post('/metrics', (req, res) =>{
     getAllInfo(accessToken, startDate, endDate).then(result => {
         saveDataToJson(result);
 
-        responseJson.sentMails = getSentMails(result['sentMails'])
-        responseJson.receivedMails = getReceivedMails(result['receivedMails'])
-        responseJson.averageReplyToSent = getReplyToSent(result['sentMails'], result['receivedMails'], 'sentDateTime', 'receivedDateTime')
-        responseJson.averageReplyToReceived = getReplyToSent(result['receivedMails'], result['sentMails'], 'receivedDateTime', 'sentDateTime')
-        responseJson.mailDayAnalytics = getDayMailAnalytics(result['sentMails'], 'sentDateTime')
-        responseJson.receivedDayAnalytics = getDayMailAnalytics(result['receivedMails'], 'receivedDateTime')
-        top = getTopRecipients(result['sentMails'], result['receivedMails'])
-        top_Senders = getTopSenders(result['receivedMails'], top)
-
-        responseJson.sentSum = getUnanswered(result['sentMails'], result['receivedMails'])
-        responseJson.receivedSum = getUnanswered(result['receivedMails'], result['sentMails'])
-        responseJson.topDomains = getTopDomain(top)
-        top = getTopTen(top)
-        responseJson.topRecipients = getReplyToSentByTop(result['sentMails'], result['receivedMails'], 'sentDateTime', 'receivedDateTime', top)
-        responseJson.topSenders = getReplyToReceiveByTop(result['receivedMails'], result['sentMails'], 'receivedDateTime', 'sentDateTime', top_Senders)
+        // responseJson.sentMails = getSentMails(result['sentMails'])
+        // responseJson.receivedMails = getReceivedMails(result['receivedMails'])
+        // responseJson.averageReplyToSent = getReplyToSent(result['sentMails'], result['receivedMails'], 'sentDateTime', 'receivedDateTime')
+        // responseJson.averageReplyToReceived = getReplyToSent(result['receivedMails'], result['sentMails'], 'receivedDateTime', 'sentDateTime')
+        // responseJson.mailDayAnalytics = getDayMailAnalytics(result['sentMails'], 'sentDateTime')
+        // responseJson.receivedDayAnalytics = getDayMailAnalytics(result['receivedMails'], 'receivedDateTime')
+        // top = getTopRecipients(result['sentMails'], result['receivedMails'])
+        // top_Senders = getTopSenders(result['receivedMails'], top)
+        //
+        // responseJson.sentSum = getUnanswered(result['sentMails'], result['receivedMails'])
+        // responseJson.receivedSum = getUnanswered(result['receivedMails'], result['sentMails'])
+        // responseJson.topDomains = getTopDomain(top)
+        // top = getTopTen(top)
+        // responseJson.topRecipients = getReplyToSentByTop(result['sentMails'], result['receivedMails'], 'sentDateTime', 'receivedDateTime', top)
+        // responseJson.topSenders = getReplyToReceiveByTop(result['receivedMails'], result['sentMails'], 'receivedDateTime', 'sentDateTime', top_Senders)
         
         
 
